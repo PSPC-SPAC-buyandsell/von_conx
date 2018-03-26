@@ -122,7 +122,13 @@ get_dc_args() {
 }
 
 build() {
-    cp -p /usr/lib/libindy.so "${SCRIPT_HOME}"
+    if [ -f "/usr/lib/libindy.so" ]
+    then
+        cp -p /usr/lib/libindy.so "${SCRIPT_HOME}"
+    else
+        echo "Error: missing /usr/lib/libindy.so; install von_base before von_conx" > /dev/stderr
+        exit 1
+    fi
     echo -e "\nBuilding containers ..."
     echo docker-compose $@
     docker-compose $@
