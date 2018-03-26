@@ -1,0 +1,110 @@
+version: '3'
+services:
+
+    indy_pool:
+        build:
+            context: ..
+            args:
+                pool_ip: ${TEST_POOL_IP:-10.0.0.2}
+            dockerfile: docker/Dockerfile.indy-pool
+        image: indy_pool
+        ports:
+            - "9700-9709:9700-9709"
+        networks:
+            - indy_pool_network
+
+    sri:
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile.agent
+        depends_on:
+            - indy_pool
+        image: sri
+        hostname: sri
+        environment:
+            PIPENV_MAX_DEPTH: 16
+            TEST_POOL_IP: ${TEST_POOL_IP:-10.0.0.2}
+            RUST_LOG: error
+            AGENT_PROFILE: sri
+            HOST_IP: 0.0.0.0
+            HOST_PORT: ${HOST_PORT_SRI:-8991}
+            HOST_PORT_TRUST_ANCHOR: ${HOST_PORT_TRUST_ANCHOR:-8990}
+        networks:
+            - von_conx_network
+            - indy_pool_network
+        ports:
+            - ${HOST_PORT_SRI:-8991}:${HOST_PORT_SRI:-8991}
+
+    pspc-org-book:
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile.agent
+        depends_on:
+            - indy_pool
+        image: pspc-org-book
+        hostname: pspc-org-book
+        environment:
+            PIPENV_MAX_DEPTH: 16
+            TEST_POOL_IP: ${TEST_POOL_IP:-10.0.0.2}
+            RUST_LOG: error
+            AGENT_PROFILE: pspc-org-book
+            HOST_IP: 0.0.0.0
+            HOST_PORT: ${HOST_PORT_PSPC_ORG_BOOK:-8992}
+            HOST_PORT_TRUST_ANCHOR: ${HOST_PORT_TRUST_ANCHOR:-8990}
+        networks:
+            - von_conx_network
+            - indy_pool_network
+        ports:
+            - ${HOST_PORT_PSPC_ORG_BOOK:-8992}:${HOST_PORT_PSPC_ORG_BOOK:-8992}
+
+    bc-org-book:
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile.agent
+        depends_on:
+            - indy_pool
+        image: bc-org-book
+        hostname: bc-org-book
+        environment:
+            PIPENV_MAX_DEPTH: 16
+            TEST_POOL_IP: ${TEST_POOL_IP:-10.0.0.2}
+            RUST_LOG: error
+            AGENT_PROFILE: bc-org-book
+            HOST_IP: 0.0.0.0
+            HOST_PORT: ${HOST_PORT_BC_ORG_BOOK:-8993}
+            HOST_PORT_TRUST_ANCHOR: ${HOST_PORT_TRUST_ANCHOR:-8990}
+        networks:
+            - von_conx_network
+            - indy_pool_network
+        ports:
+            - ${HOST_PORT_BC_ORG_BOOK:-8993}:${HOST_PORT_BC_ORG_BOOK:-8993}
+
+    bc-registrar:
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile.agent
+        depends_on:
+            - indy_pool
+        image: bc-registrar
+        hostname: bc-registrar
+        environment:
+            PIPENV_MAX_DEPTH: 16
+            TEST_POOL_IP: ${TEST_POOL_IP:-10.0.0.2}
+            RUST_LOG: error
+            AGENT_PROFILE: bc-registrar
+            HOST_IP: 0.0.0.0
+            HOST_PORT: ${HOST_PORT_BC_REGISTRAR:-8994}
+            HOST_PORT_TRUST_ANCHOR: ${HOST_PORT_TRUST_ANCHOR:-8990}
+        networks:
+            - von_conx_network
+            - indy_pool_network
+        ports:
+            - ${HOST_PORT_BC_REGISTRAR:-8994}:${HOST_PORT_BC_REGISTRAR:-8994}
+
+networks:
+    von_conx_network:
+        external:
+            name: von_conx_network
+    indy_pool_network:
+        external:
+            name: indy_pool_network

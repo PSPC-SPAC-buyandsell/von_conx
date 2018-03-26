@@ -1,0 +1,11 @@
+{
+    "type": "schema-send",
+    "data": {
+        "schema": {
+            "origin-did": "%s",
+            "name": "%s",
+            "version": "%s"
+        },
+        "attr-names": %s
+    }
+}

@@ -1,0 +1,168 @@
+#!/bin/bash
+
+#
+# Copyright 2017-2018 Government of Canada - Public Services and Procurement Canada - buyandsell.gc.ca
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+set -e
+SCRIPT_HOME=$(readlink -f $(dirname "${0}"))
+
+# --------------------------------------------------------------------------------------------------------------
+# Usage:
+# --------------------------------------------------------------------------------------------------------------
+usage() {
+    cat <<-EOF
+
+    Usage: ${0} {start|stop|build|rm}
+
+    Options:
+
+    build - Build the docker images for the project.
+            You need to do this first, since the builds require
+            a combination of Docker images.
+
+    start - Create the application containers from the build images
+            and start the services, based on the docker-compose file applicable.
+
+            You may pass in a list of containers to start.
+            By default all containers will be started.
+
+    bg -    Create the application containers from the build images
+            and start the services in the background, based on the docker-compose
+            file applicable.
+
+    stop -  Stop the services. This is a non-destructive process. The containers
+            are not deleted; the next call to start will reuse them.
+
+    rm -    Remove any existing application containers.
+
+EOF
+exit 1
+}
+
+# --------------------------------------------------------------------------------------------------------------
+# Default settings:
+# --------------------------------------------------------------------------------------------------------------
+
+DEFAULT_CONTAINERS=''
+
+# --------------------------------------------------------------------------------------------------------------
+# Functions:
+# --------------------------------------------------------------------------------------------------------------
+
+configure_env() {
+    if [ -f .env ]
+    then
+        export $(cat .env | xargs)
+    fi
+
+    for ARG in $@
+    do
+        case "${ARG}" in
+            *=*)
+                export ${ARG}
+                ;;
+        esac
+    done
+}
+
+get_dc_args() {
+    CONTAINERS=''
+    ARGS=''
+    DC_FILE="docker-compose-agents-less-trust-anchor.yml"
+    DC_COMMAND=${1}
+    shift
+    COLOUR=1
+
+    if [ "${COMMAND}" == "start" ]
+    then
+        ARGS+="--force-recreate"
+    fi
+
+    for ARG in $@
+    do
+        case "${ARG}" in
+            --no-ansi)
+                COLOUR=0;;
+            *=*)
+                ;;
+            -*)
+                ARGS+=" ${ARG}";;
+            *)
+                CONTAINERS+=" ${ARG}";;
+        esac
+    done
+
+    if [ -z "${CONTAINERS}" ]
+    then
+        CONTAINERS="${DEFAULT_CONTAINERS}"
+    fi
+
+    if [[ -z "${CONTAINERS}" || "${CONTAINERS}" == *"trust-anchor"* ]]
+    then
+        DC_FILE="docker-compose-all-agents.yml"
+    fi
+
+    OPTS="-f ${DC_FILE}"
+    [ "${COLOUR}" -eq "0" ] && OPTS="${OPTS} --no-ansi"
+
+    echo ${OPTS} ${DC_COMMAND} ${ARGS} ${CONTAINERS}
+}
+
+build() {
+    cp -p /usr/lib/libindy.so "${SCRIPT_HOME}"
+    echo -e "\nBuilding containers ..."
+    echo docker-compose $@
+    docker-compose $@
+}
+
+# --------------------------------------------------------------------------------------------------------------
+
+pushd "${SCRIPT_HOME}" > /dev/null
+COMMAND="${1}"
+shift || true
+
+case "${COMMAND}" in
+    bg)
+        DC_ARGS=$(get_dc_args up --no-start $@)
+        configure_env $@
+        docker-compose ${DC_ARGS}
+        docker-compose ${DC_ARGS/up --no-start/start}
+        ;;
+    start)
+        DC_ARGS=$(get_dc_args up $@)
+        configure_env $@
+        docker-compose ${DC_ARGS}
+        ;;
+    stop)
+        DC_ARGS=$(get_dc_args stop $@)
+        configure_env $@
+        docker-compose ${DC_ARGS}
+        ;;
+    rm)
+        DC_ARGS=$(get_dc_args rm $@)
+        configure_env $@
+        docker-compose ${DC_ARGS}
+        ;;
+    build)
+        DC_ARGS=$(get_dc_args build $@)
+        configure_env $@
+        build ${DC_ARGS}
+        ;;
+    *)
+        usage
+esac
+
+popd > /dev/null

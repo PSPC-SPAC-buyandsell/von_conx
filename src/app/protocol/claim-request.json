@@ -1,0 +1,11 @@
+{
+    "type": "claim-request",
+    "data": {
+        "schemata": %s,
+        "claim-filter": {
+            "attr-match": %s,
+            "pred-match": %s
+        },
+        "requested-attrs": %s
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "type": "schema-lookup",
+    "data": {
+        "schema": {
+            "origin-did": "%s",
+            "name": "%s",
+            "version": "%s"
+        }
+    }
+}

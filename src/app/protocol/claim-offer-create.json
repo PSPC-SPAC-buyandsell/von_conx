@@ -1,0 +1,11 @@
+{
+    "type": "claim-offer-create",
+    "data": {
+        "schema": {
+            "origin-did": "%s",
+            "name": "%s",
+            "version": "%s"
+        },
+        "holder-did": "%s"
+    }
+}
