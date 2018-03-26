@@ -43,7 +43,6 @@ RUN apt-get install -y pipenv
 COPY docker/libindy.so /usr/lib
 COPY src/requirements.txt ${HOME}/
 COPY docker/docker-entrypoint.sh ${BUILD}/
-COPY docker/docker-compose-all-agents.yml ${BUILD}/
 RUN chmod a+x ${BUILD}/docker-entrypoint.sh
 
 WORKDIR ${HOME}/src

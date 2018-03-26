@@ -39,10 +39,10 @@ manage_script = pjoin(dirname(dirname(dirname(abspath(__file__)))), 'docker', 'm
 
 def shutdown(wrappers, hard=False):
     global manage_script
-    print('\n\n== X == Stopping {}'.format(', '.join((w for w in wrappers if hard or wrappers[w]._started))))
-    rv = pexpect.run('{} stop {}'.format(
-        manage_script,
-        ' '.join((w for w in wrappers if hard or wrappers[w]._started))))
+    w_stops = [w for w in wrappers if hard or wrappers[w]._started]
+    if w_stops:
+        print('\n\n== X == Stopping {}'.format(', '.join(w_stops)))
+        rv = pexpect.run('{} stop {}'.format(manage_script, ' '.join(w_stops)))
 
 
 def is_up(host, port):
@@ -177,6 +177,7 @@ async def test_wrappers_with_trust_anchor(pool_ip):
         ini_text = expandvars(ini_file.read())
         parser.readfp(StringIO(ini_text))
     cfg = {s: dict(parser[s].items()) for s in parser.sections()}
+    cfg.pop('Pool')
 
     agent_profile2port = {
         'trust-anchor': 8990,
@@ -865,6 +866,7 @@ async def test_no_trust_anchor(pool_ip):
         ini_text = expandvars(ini_file.read())
         parser.readfp(StringIO(ini_text))
     cfg = {s: dict(parser[s].items()) for s in parser.sections()}
+    cfg.pop('Pool')
 
     agent_profile2port = {
         'trust-anchor': 8990,
