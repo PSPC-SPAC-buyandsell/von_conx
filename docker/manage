@@ -121,14 +121,27 @@ get_dc_args() {
     echo ${OPTS} ${DC_COMMAND} ${ARGS} ${CONTAINERS}
 }
 
-build() {
-    if [ -f "/usr/lib/libindy.so" ]
+_update() {
+    PATH_SRC=$1
+    PATH_DEST=$2
+
+    if [[ ! -f "${PATH_DEST}" || "${PATH_SRC}" -nt "${PATH_DEST}" ]]
     then
-        cp -p /usr/lib/libindy.so "${SCRIPT_HOME}"
-    else
-        echo "Error: missing /usr/lib/libindy.so; install von_base before von_conx" > /dev/stderr
-        exit 1
+        if [ -f "/usr/lib/libindy.so" ]
+        then
+            echo "Copying ${PATH_SRC} to ${PATH_DEST}" > /dev/stdout
+            cp -p "${PATH_SRC}" "${PATH_DEST}"
+        else
+            echo "Error: missing /usr/lib/libindy.so; install von_base before von_conx" > /dev/stderr
+            exit 1
+        fi
     fi
+}
+
+build() {
+    _update "${HOME}/von_base/lib/libindy.so" "${SCRIPT_HOME}/libindy.so"
+    _update "${HOME}/von_base/files/indy-pool.dockerfile" "${SCRIPT_HOME}/Dockerfile.indy_pool"
+
     echo -e "\nBuilding containers ..."
     echo docker-compose $@
     docker-compose $@

@@ -6,7 +6,7 @@ services:
             context: ..
             args:
                 pool_ip: ${TEST_POOL_IP:-10.0.0.2}
-            dockerfile: docker/Dockerfile.indy-pool
+            dockerfile: docker/Dockerfile.indy_pool
         image: indy_pool
         ports:
             - "9700-9709:9700-9709"
