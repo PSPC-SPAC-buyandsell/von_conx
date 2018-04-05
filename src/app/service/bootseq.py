@@ -77,16 +77,11 @@ class BootSequence:
                 assert schema
 
                 if isinstance(ag, Issuer):
-                    claim_def_json = await ag.get_claim_def(schema['seqNo'], ag.did)
-                    if json.loads(claim_def_json):
-                        logger.info('Using existing claim def on ledger for schema {} version {}'.format(
-                            schema_name,
-                            schema_version))
-                    else:
-                        await ag.send_claim_def(schema_json)
-                        logger.info('Created claim def on ledger for schema {} version {}'.format(
-                            schema_name,
-                            schema_version))
+                    await ag.send_claim_def(schema_json)
+                    logger.info('Ensured claim def on ledger and wallet {} for schema {} version {}'.format(
+                        ag.wallet.name,
+                        schema_name,
+                        schema_version))
 
     def agent_config_for(cfg):
         return {

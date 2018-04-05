@@ -39,7 +39,7 @@ def init_logging():
     logging.getLogger('asyncio').setLevel(logging.ERROR)
     logging.getLogger('von_conx').setLevel(logging.INFO)
     logging.getLogger('von_agent').setLevel(logging.INFO)
-    logging.getLogger('indy').setLevel(logging.ERROR)
+    logging.getLogger('indy').setLevel(logging.DEBUG)
     logging.getLogger('requests').setLevel(logging.ERROR)
     logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
