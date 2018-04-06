@@ -22,7 +22,7 @@ from sanic import Sanic
 
 
 # initialize app; load views
-app = Sanic()
+app = Sanic(strict_slashes=True)
 c = cfg.init_config()
 from app import views
 
