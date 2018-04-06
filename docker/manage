@@ -129,30 +129,51 @@ _update() {
     PATH_SRC=$1
     PATH_DEST=$2
 
+    RV=0
     if [[ ! -f "${PATH_DEST}" || "${PATH_SRC}" -nt "${PATH_DEST}" ]]
     then
         if [ -f "${PATH_SRC}" ]
         then
-            echo "Copying ${PATH_SRC} to ${PATH_DEST}" > /dev/stdout
+            RV=1
             cp -p "${PATH_SRC}" "${PATH_DEST}"
         else
             echo "Error: missing '${PATH_SRC}'; install von_base before von_conx" > /dev/stderr
             exit 1
         fi
     fi
+
+    echo ${RV}
 }
 
 build() {
     VON_BASE_FILES=$(dirname $(dirname "${SCRIPT_HOME}"))/von_base/files
-    _update "${VON_BASE_FILES}/libindy.so.tgz" "${SCRIPT_HOME}/libindy.so.tgz"
-    _update "${VON_BASE_FILES}/indy-pool.dockerfile" "${SCRIPT_HOME}/Dockerfile.indy_pool"
+    RM_LIBINDY=$(_update "${VON_BASE_FILES}/libindy.so.tgz" "${SCRIPT_HOME}/libindy.so.tgz")
+    RM_INDY_POOL_DF=0
+
+    IMAGES=$(printf " %s" "${@}")
+    IMAGES=${IMAGES##*build}
+    if [[ -z "${IMAGES// /}" || "${IMAGES}" = *"indy_pool"* ]]
+    then
+        RM_INDY_POOL_DF=$(_update "${VON_BASE_FILES}/indy-pool.dockerfile" "${SCRIPT_HOME}/Dockerfile.indy_pool")
+    fi
 
     echo -e "\nBuilding containers ..."
-    echo docker-compose $@
     docker-compose $@
 
-    rm -rf "${SCRIPT_HOME}/libindy.so.tgz"
-    rm -rf "${SCRIPT_HOME}/Dockerfile.indy_pool"
+    # only remove files this process actually copied over - retain operator-overridden selections
+    if [ "${RM_LIBINDY}" -ne "0" ]
+    then
+        rm -rf "${SCRIPT_HOME}/libindy.so.tgz"
+    else
+        echo "Retaining '${SCRIPT_HOME}/libindy.so.tgz'"
+    fi
+
+    if [ "${RM_INDY_POOL_DF}" -ne "0" ]
+    then
+        rm -rf "${SCRIPT_HOME}/Dockerfile.indy_pool"
+    else
+        echo "Retaining '${SCRIPT_HOME}/Dockerfile.indy_pool"
+    fi
 }
 
 # --------------------------------------------------------------------------------------------------------------
