@@ -46,7 +46,11 @@ usage() {
     stop -  Stop the services. This is a non-destructive process. The containers
             are not deleted; the next call to start will reuse them.
 
-    rm -    Remove any existing application containers.
+    rm -    Remove any existing application containers, as built through this 
+            script via docker-compose -- any further containers will remain
+
+    hose -  Remove all docker containers, stopping any running ones first, however
+            any process might have built them (e.g., indy_pool for von_agent unit testing)
 
 EOF
 exit 1
@@ -127,24 +131,28 @@ _update() {
 
     if [[ ! -f "${PATH_DEST}" || "${PATH_SRC}" -nt "${PATH_DEST}" ]]
     then
-        if [ -f "/usr/lib/libindy.so" ]
+        if [ -f "${PATH_SRC}" ]
         then
             echo "Copying ${PATH_SRC} to ${PATH_DEST}" > /dev/stdout
             cp -p "${PATH_SRC}" "${PATH_DEST}"
         else
-            echo "Error: missing /usr/lib/libindy.so; install von_base before von_conx" > /dev/stderr
+            echo "Error: missing '${PATH_SRC}'; install von_base before von_conx" > /dev/stderr
             exit 1
         fi
     fi
 }
 
 build() {
-    _update "${HOME}/von_base/lib/libindy.so" "${SCRIPT_HOME}/libindy.so"
-    _update "${HOME}/von_base/files/indy-pool.dockerfile" "${SCRIPT_HOME}/Dockerfile.indy_pool"
+    VON_BASE_FILES=$(dirname $(dirname "${SCRIPT_HOME}"))/von_base/files
+    _update "${VON_BASE_FILES}/libindy.so.tgz" "${SCRIPT_HOME}/libindy.so.tgz"
+    _update "${VON_BASE_FILES}/indy-pool.dockerfile" "${SCRIPT_HOME}/Dockerfile.indy_pool"
 
     echo -e "\nBuilding containers ..."
     echo docker-compose $@
     docker-compose $@
+
+    rm -rf "${SCRIPT_HOME}/libindy.so.tgz"
+    rm -rf "${SCRIPT_HOME}/Dockerfile.indy_pool"
 }
 
 # --------------------------------------------------------------------------------------------------------------
@@ -174,6 +182,9 @@ case "${COMMAND}" in
         DC_ARGS=$(get_dc_args rm $@)
         configure_env $@
         docker-compose ${DC_ARGS}
+        ;;
+    hose)
+        while read -r HASH; do docker rm $(docker stop ${HASH}); done < <(docker ps -aq)
         ;;
     build)
         DC_ARGS=$(get_dc_args build $@)
