@@ -23,7 +23,7 @@ from von_agent.proto.validate import PROTO_MSG_JSON_SCHEMA
 from von_agent.util import ppjson
 
 
-def slug2camel(slug):
+def slug2pascal(slug):
     hump = lambda pat: pat.group(1).upper()
     rv = re.sub(r'^([a-z])', hump, slug)
     rv = re.sub(r'-([a-z])', hump, rv)
@@ -105,7 +105,7 @@ def openapi_model(agent, msg_type):
         return None
 
     return type(
-        slug2camel(msg_type),
+        slug2pascal(msg_type),
         (),
         {
             'type': doc.String(description=msg_type, required=True, choices=[msg_type]),
