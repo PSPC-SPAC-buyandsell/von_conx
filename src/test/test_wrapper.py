@@ -258,7 +258,7 @@ async def test_wrappers_with_trust_anchor(pool_ip):
     for profile in agent_profiles:
         if 'Origin' not in cfg[profile]:
             continue
-        for name in cfg[profile]['Origin']:  # read each schema once - each schema has one originator
+        for name in cfg[profile]['Origin']:  # read each schema once - each schema has one origin (agent)
             for version in (v.strip() for v in cfg[profile]['Origin'][name].split(',')):
                 s_key = SchemaKey(agent_profile2did[profile], name, version)
                 SCHEMA_CACHE[s_key] = get_post_response(

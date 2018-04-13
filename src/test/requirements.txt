@@ -1,5 +1,5 @@
 requests>=2.18.4
-von_agent==0.6.4
+von_agent==0.6.5
 jsonschema>=2.6.0
 pexpect>=4.3.0
 pytest>=3.4.2

@@ -26,13 +26,17 @@ import logging.config
 
 _inis = [
     pjoin(dirname(abspath(__file__)), 'config', 'config.ini'),
-    pjoin(dirname(abspath(__file__)), 'config', 'agent-profile', '{}.ini'.format(environ.get('AGENT_PROFILE'))),
+    pjoin(  
+        dirname(abspath(__file__)),
+        'config',
+        'agent-profile',
+        '{}.ini'.format(environ.get('AGENT_PROFILE', 'trust-anchor')))
 ]
 
 def init_logging():
     dir_log = pjoin(dirname(abspath(__file__)), 'log')
     makedirs(dir_log, exist_ok=True)
-    path_log = pjoin(dir_log, environ.get('AGENT_PROFILE') + '.log')
+    path_log = pjoin(dir_log, environ.get('AGENT_PROFILE', 'trust-anchor') + '.log')
 
     LOG_FORMAT='%(asctime)-15s | %(levelname)-8s | %(name)-12s | %(message)s'
     logging.basicConfig(filename=path_log, level=logging.INFO, format=LOG_FORMAT, datefmt='%Y-%m-%d %H:%M:%S')

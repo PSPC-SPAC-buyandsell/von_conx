@@ -18,13 +18,17 @@ from app import cfg
 from app.cache import mem_cache
 from app.service.bootseq import BootSequence
 from app.service.eventloop import do
+from os.path import dirname, join
 from sanic import Sanic
 
 
-# initialize app; load views
+DIR_STATIC = join(dirname(__file__), 'static')
+
+# initialize app
 app = Sanic(strict_slashes=True)
+app.static('/static', DIR_STATIC)
+app.static('/favicon.ico', join(DIR_STATIC, 'favicon.ico'))
 c = cfg.init_config()
-from app import views
 
 @app.listener('before_server_stop')
 async def cleanup(app, loop):
@@ -38,3 +42,6 @@ async def cleanup(app, loop):
 
 # start
 BootSequence.go()
+
+# load views (which depend on agent role)
+from app import views
