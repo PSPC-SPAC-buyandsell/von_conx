@@ -52,6 +52,8 @@ usage() {
     hose -  Remove all docker containers, stopping any running ones first, however
             any process might have built them (e.g., indy_pool for von_agent unit testing)
 
+    tidy -  Remove all dangling (intermediate) images
+
 EOF
 exit 1
 }
@@ -211,6 +213,9 @@ case "${COMMAND}" in
         DC_ARGS=$(get_dc_args build $@)
         configure_env $@
         build ${DC_ARGS}
+        ;;
+    tidy)
+        while read -r HASH; do docker rmi ${HASH}; done < <(docker images -f 'dangling=true' -q)
         ;;
     *)
         usage
