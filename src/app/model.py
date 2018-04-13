@@ -86,7 +86,9 @@ def json_schema_obj2model_obj(agent, msg_type, obj):
 
 def is_native(agent, msg_type):
     rv = False
-    if offers(agent, msg_type):
+    if msg_type in ('master-secret-set', 'claims-reset'):
+        rv = isinstance(agent, HolderProver)
+    elif offers(agent, msg_type):
         rv = not proxy_did_required(agent, msg_type)
     return rv
 

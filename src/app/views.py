@@ -167,7 +167,7 @@ async def process_post_claim_def_send(request):
 
 
 @cond_deco(app.post('/api/v0/master-secret-set'), offers(agent, 'master-secret-set'))
-@cond_deco(doc.summary('Set master secret (lable)'), offers(agent, 'master-secret-set'))
+@cond_deco(doc.summary('Set master secret (label)'), offers(agent, 'master-secret-set'))
 @cond_deco(doc.consumes(openapi_model(agent, 'master-secret-set'), location='body'), offers(agent, 'master-secret-set'))
 @cond_deco(doc.produces(dict), offers(agent, 'master-secret-set'))
 @cond_deco(
