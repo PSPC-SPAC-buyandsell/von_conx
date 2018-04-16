@@ -34,3 +34,5 @@ The design document is available from the `von_base` repository (<https://github
   - `von_conx`
 
 including instructions for installation, configuration, and operation.
+
+An additional document in this package at `doc/von-conx-demo.doc` orchestrates a live demonstration introducing the capabilities of `von_agent` via the embedded OpenAPI feature of `von_conx`.
